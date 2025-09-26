@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Warning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #ffffff;
+            background: #000;
+        }
+        #solidityscan-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2147483647;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .solidityscan-alert-container {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid #ef4444;
+            border-radius: 16px;
+            width: 95vw;
+            max-width: 1400px;
+            height: 90vh;
+            max-height: 700px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(239, 68, 68, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+        .solidityscan-alert-left {
+            flex: 2;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+        .solidityscan-alert-right {
+            flex: 1;
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            border-left: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        @keyframes slideIn {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        .solidityscan-alert-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .header-text {
+            flex: 1;
+        }
+        .solidityscan-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .solidityscan-alert-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: #ef4444;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .alert-subtitle {
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 0 0 15px;
+            opacity: 0.9;
+        }
+        .solidityscan-alert-body {
+            flex: 1;
+            padding: 0;
+        }
+        .threat-info h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0 0 20px;
+        }
+        .threat-domain {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            margin: 10px 0 0;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        .threat-description {
+            font-size: 16px;
+            color: #d1d5db;
+            line-height: 1.6;
+            margin: 20px 0 30px;
+        }
+        .warning-box {
+            margin: 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            border-radius: 12px;
+            border: 1px solid #ef4444;
+        }
+        .warning-box h3 {
+            color: #fecaca;
+            font-size: 18px;
+            margin: 0 0 15px;
+            font-weight: 600;
+        }
+        .warning-box ul {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+            color: #fed7d7;
+        }
+        .warning-box li {
+            margin: 12px 0;
+            line-height: 1.5;
+            font-size: 15px;
+            padding-left: 0;
+        }
+        .recommendation-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            border-radius: 12px;
+            border: 1px solid #10b981;
+        }
+        .recommendation-section h3 {
+            color: #6ee7b7;
+            font-size: 18px;
+            margin: 0 0 15px;
+            font-weight: 600;
+        }
+        .recommendation-section p {
+            color: #d1fae5;
+            margin: 0;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .solidityscan-alert-actions {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .btn-primary, .btn-danger, .btn-link {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: #ffffff;
+            border: 2px solid #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        .secondary-actions {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .btn-link {
+            background: none;
+            color: #9ca3af;
+            text-decoration: underline;
+            font-size: 13px;
+            padding: 8px;
+            width: auto;
+            margin: 0;
+        }
+        .btn-link:hover {
+            color: #d1d5db;
+        }
+        .solidityscan-alert-footer {
+            text-align: center;
+            padding: 20px 0 0;
+            border-top: 1px solid rgba(74, 222, 128, 0.3);
+        }
+        .solidityscan-alert-footer p {
+            margin: 0;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+        .solidityscan-alert-footer strong {
+            color: #10b981;
+        }
+        @media (max-width: 1024px) {
+            .solidityscan-alert-container {
+                width: 98vw;
+                height: 95vh;
+                flex-direction: column;
+            }
+            .solidityscan-alert-left {
+                flex: 1;
+                padding: 30px;
+                max-height: 60vh;
+            }
+            .solidityscan-alert-right {
+                flex: none;
+                border-left: none;
+                border-top: 1px solid rgba(239, 68, 68, 0.3);
+                padding: 30px;
+                justify-content: flex-start;
+            }
+            .solidityscan-alert-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .header-text {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="solidityscan-alert-overlay">
+        <div class="solidityscan-alert-container">
+            <div class="solidityscan-alert-left">
+                <div class="solidityscan-alert-header">
+                    <div class="solidityscan-logo">
+                        <svg width="80" height="80" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" fill="#ef4444"/>
+                            <path d="M24 14L24 28M24 32L24 34" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="header-text">
+                        <h1>🚨 Phishing Warning</h1>
+                        <p class="alert-subtitle">SolidityScan Phishing Detection</p>
+                        <p class="threat-domain" id="threat-domain-display"></p>
+                    </div>
+                </div>
+                
+                <div class="solidityscan-alert-body">
+                    <div class="threat-info">
+                        <h2>Suspicious Website Detected</h2>
+                        <p class="threat-description" id="threat-reason-display"></p>
+                        
+                        <div class="warning-box">
+                            <h3>⚠️ This website may:</h3>
+                            <ul>
+                                <li>💰 Steal your cryptocurrency and NFTs</li>
+                                <li>🔐 Harvest your private keys and seed phrases</li>
+                                <li>🎣 Trick you into signing malicious transactions</li>
+                                <li>📱 Install malware or compromise your device</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="solidityscan-alert-right">
+                <div class="recommendation-section">
+                    <h3>🛡️ Recommended Action</h3>
+                    <p>For your security, we <strong>strongly recommend</strong> going back to safety. Only proceed if you are absolutely certain this website is legitimate.</p>
+                </div>
+                
+                <div class="solidityscan-alert-actions">
+                    <button id="ss-go-back" class="btn-primary">
+                        ← Back to Safety
+                    </button>
+                    <button id="ss-accept-risk" class="btn-danger">
+                        Accept Risk and Visit Website
+                    </button>
+                    <div class="secondary-actions">
+                        <button id="ss-report-false" class="btn-link">
+                            Report Incorrect Warning
+                        </button>
+                    </div>
+                </div>
+                <div class="header">
+                    <img src="icons/logo.svg" alt="SolidityScan Logo" class="logo" />
+                  </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedUrl = urlParams.get('url');
+            const reason = 'This website has been flagged as potentially malicious.';
+
+            const threatDomainDisplay = document.getElementById('threat-domain-display');
+            const threatReasonDisplay = document.getElementById('threat-reason-display');
+            const goBackButton = document.getElementById('ss-go-back');
+            const acceptRiskButton = document.getElementById('ss-accept-risk');
+            const reportFalseButton = document.getElementById('ss-report-false');
+
+            threatReasonDisplay.textContent = reason;
+
+            let decodedUrl = '';
+            if (encodedUrl) {
+                try {
+                    decodedUrl = atob(encodedUrl);
+                    // Allow only http/https URLs
+                    const isHttpOrHttps = /^https?:\/\//i.test(decodedUrl);
+                    if (!isHttpOrHttps) {
+                        threatDomainDisplay.textContent = 'Only http/https URLs are allowed';
+                        acceptRiskButton.disabled = true;
+                    } else {
+                        const url = new URL(decodedUrl);
+                        if (url.protocol === 'http:' || url.protocol === 'https:') {
+                            threatDomainDisplay.textContent = url.hostname;
+                            acceptRiskButton.disabled = false;
+                        } else {
+                            threatDomainDisplay.textContent = 'Only http/https URLs are allowed';
+                            acceptRiskButton.disabled = true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to decode URL:', e);
+                    threatDomainDisplay.textContent = 'Invalid URL provided';
+                    acceptRiskButton.disabled = true;
+                }
+            } else {
+                threatDomainDisplay.textContent = 'No URL provided';
+                acceptRiskButton.disabled = true;
+            }
+
+            goBackButton.addEventListener('click', () => {
+                window.location.href="https://solidityscan.com"
+            });
+
+            acceptRiskButton.addEventListener('click', () => {
+                if (decodedUrl && /^https?:\/\//i.test(decodedUrl)) {
+                    const url = new URL(decodedUrl);
+                    if (url.protocol === 'http:' || url.protocol === 'https:') {
+                        window.location.href = decodedUrl;
+                    }
+                }
+            });
+
+            reportFalseButton.addEventListener('click', () => {
+                alert('Thank you for reporting! This feature is not yet implemented.');
+            });
+        });
+    </script>
+</body>
+</html>
